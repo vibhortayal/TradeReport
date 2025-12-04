@@ -573,13 +573,13 @@
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="addTrade()">Add Trade</button>
                     <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
-                    <button class="btn btn-secondary" onclick="showGoogleSheetsSetup()" style="margin-left: 12px;">⚙️ Google Sheets Setup</button>
+                    <button class="btn btn-secondary" onclick="showGoogleSheetsSetup()" style="margin-left: 12px;" display:none;>⚙️ Google Sheets Setup</button>
                 </div>
             </div>
         </div>
 
         <div id="gsSetup" class="tab-content" style="display:none;">
-            <div class="form-section">
+            <div class="form-section" style="display:none;">
                 <h3>Google Sheets Integration</h3>
                 <p style="color: var(--color-text-secondary); font-size: 14px; margin-bottom: 20px;">
                     Trades auto-sync to Google Sheets when you add or delete them. Update URL if needed.
@@ -1031,3 +1031,4 @@
     </script>
 </body>
 </html>
+
