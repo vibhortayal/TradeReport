@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Trade Tracker</title>
+    <style>
+        :root {
+            --color-primary: #208080;
+            --color-primary-hover: #1a6666;
+            --color-background: #f5f5f2;
+            --color-surface: #ffffff;
+            --color-text: #1f2121;
+            --color-text-secondary: #626c71;
+            --color-success: #218d8d;
+            --color-error: #c01530;
+            --color-warning: #a84b2f;
+            --color-border: #d4d3d0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .summary-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+        }
+
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .summary-card .subvalue {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 6px;
+        }
+
+        .status-positive {
+            color: var(--color-success);
+        }
+
+        .status-negative {
+            color: var(--color-error);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--color-border);
+            margin: 30px 0 20px 0;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 250ms ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--color-text);
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--color-background);
+            color: var(--color-text);
+            transition: border-color 150ms ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(32, 128, 128, 0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-background);
+        }
+
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .trades-table thead {
+            background: var(--color-background);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .trades-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+        }
+
+        .trades-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .trades-table tbody tr:hover {
+            background: var(--color-background);
+        }
+
+        .trades-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .profit {
+            color: var(--color-success);
+            font-weight: 600;
+        }
+
+        .loss {
+            color: var(--color-error);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--color-text-secondary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .trades-table {
+                font-size: 12px;
+            }
+
+            .trades-table th, .trades-table td {
+                padding: 10px 12px;
+            }
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 0 6px;
+            text-transform: uppercase;
+            color: var(--color-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Options Trade Tracker</h1>
+            <p class="subtitle">Track your call and put options with real-time performance metrics</p>
+        </header>
+
+        <div class="summary-grid" id="summaryGrid">
+            <div class="summary-card">
+                <h3>Total Trades</h3>
+                <div class="value" id="totalTrades">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Winning Days</h3>
+                <div class="value status-positive" id="gainDays">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Losing Days</h3>
+                <div class="value status-negative" id="lossDays">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total P&L</h3>
+                <div class="value" id="totalPnL">₹0</div>
+                <div class="subvalue" id="pnlStatus"></div>
+            </div>
+            <div class="summary-card">
+                <h3>Win Rate</h3>
+                <div class="value" id="winRate">0%</div>
+            </div>
+            <div class="summary-card">
+                <h3>Avg Trade</h3>
+                <div class="value" id="avgTrade">₹0</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn" onclick="switchTab(event, 'overview')">Overview</button>
+            <button class="tab-btn active" onclick="switchTab(event, 'add-trade')">Add Trade</button>
+            <button class="tab-btn" onclick="switchTab(event, 'trades')">All Trades</button>
+        </div>
+
+        <div id="overview" class="tab-content">
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Call Buys</h3>
+                    <div class="value" id="callBuys">0</div>
+                    <div class="subvalue"><span class="status-positive" id="callBuysGain">0</span> gains / <span class="status-negative" id="callBuysLoss">0</span> losses</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Put Buys</h3>
+                    <div class="value" id="putBuys">0</div>
+                    <div class="subvalue"><span class="status-positive" id="putBuysGain">0</span> gains / <span class="status-negative" id="putBuysLoss">0</span> losses</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Call Sells</h3>
+                    <div class="value" id="callSells">0</div>
+                    <div class="subvalue"><span class="status-positive" id="callSellsGain">0</span> gains / <span class="status-negative" id="callSellsLoss">0</span> losses</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Put Sells</h3>
+                    <div class="value" id="putSells">0</div>
+                    <div class="subvalue"><span class="status-positive" id="putSellsGain">0</span> gains / <span class="status-negative" id="putSellsLoss">0</span> losses</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-trade" class="tab-content active">
+            <div class="form-section">
+                <h3>Record New Trade</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="tradeDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Type (S/E/R)</label>
+                        <select id="typeSER" onchange="onTypeChange()">
+                            <option value="S">Start Exp</option>
+                            <option value="E">End Exp</option>
+                            <option value="R">Random</option>
+                        </select>
+                        <div id="endExpNote" style="display:none; color: #c01530; font-size: 12px; margin-top: 6px;">You may select next week expiry</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nifty 50 First 30 min Hi</label>
+                        <input type="number" id="niftyHi" placeholder="Hi level" oninput="calcHiPlus5()">
+                    </div>
+                    <div class="form-group">
+                        <label>+5</label>
+                        <input type="number" id="niftyHiPlus5" placeholder="Hi + 5" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Nifty 50 First 30 min Lo</label>
+                        <input type="number" id="niftyLo" placeholder="Lo level" oninput="calcLoMinus5()">
+                    </div>
+                    <div class="form-group">
+                        <label>-5</label>
+                        <input type="number" id="niftyLoMinus5" placeholder="Lo - 5" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Cross Time on 3 min chart</label>
+                        <input type="time" id="crossTime">
+                    </div>
+                    <div class="form-group">
+                        <label>Cross Hi/Lo Level</label>
+                        <select id="crossLevel" onchange="onCrossLevelChange()">
+                            <option value="">Select</option>
+                            <option value="Hi">Hi</option>
+                            <option value="Lo">Lo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title">Option Select</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Option Select CE (Strike)</label>
+                        <input type="number" id="optionSelectCE" placeholder="CE strike">
+                    </div>
+                    <div class="form-group">
+                        <label><span id="ceBuyLabel" style="display:none; background: #218d8d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 6px;">Buy</span><span id="ceSellLabel" style="display:none; background: #c01530; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 6px;">Sell</span>CE @</label>
+                        <input type="number" id="ceAt" placeholder="CE price" step="0.01" oninput="onCeAtChange()">
+                    </div>
+                    <div class="form-group">
+                        <label>Option Select PE (Strike)</label>
+                        <input type="number" id="optionSelectPE" placeholder="PE strike">
+                    </div>
+                    <div class="form-group">
+                        <label><span id="peBuyLabel" style="display:none; background: #218d8d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 6px;">Buy</span><span id="peSellLabel" style="display:none; background: #c01530; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 6px;">Sell</span>PE @</label>
+                        <input type="number" id="peAt" placeholder="PE price" step="0.01" oninput="onPeAtChange()">
+                    </div>
+                </div>
+
+                <div class="section-title">CE / PE SL & Target</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CE SL</label>
+                        <input type="number" id="ceSL" placeholder="CE SL" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>CE Target</label>
+                        <input type="number" id="ceTarget" placeholder="CE Target" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>PE SL</label>
+                        <input type="number" id="peSL" placeholder="PE SL" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>PE Target</label>
+                        <input type="number" id="peTarget" placeholder="PE Target" step="0.01" readonly>
+                    </div>
+                </div>
+
+                <div class="section-title">Exit Details</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CE Exit Time (GTT or 3:15)</label>
+                        <input type="time" id="ceExitTime">
+                    </div>
+                    <div class="form-group">
+                        <label>CE Exit Level</label>
+                        <input type="number" id="ceExitLevel" placeholder="CE exit level" step="0.01" oninput="updateCalculations()">
+                    </div>
+                    <div class="form-group">
+                        <label>PE Exit Time (GTT or 3:15)</label>
+                        <input type="time" id="peExitTime">
+                    </div>
+                    <div class="form-group">
+                        <label>PE Exit Level</label>
+                        <input type="number" id="peExitLevel" placeholder="PE exit level" step="0.01" oninput="updateCalculations()">
+                    </div>
+                </div>
+
+                <div class="section-title">P&L and Lots</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Day's Gain/Loss Per Lot (CE)</label>
+                        <input type="number" id="dayPnLPerLotCE" placeholder="Per lot CE" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Day's Gain/Loss Per Lot (PE)</label>
+                        <input type="number" id="dayPnLPerLotPE" placeholder="Per lot PE" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Lot (CE)</label>
+                        <select id="numLotCE" onchange="updateCalculations()">
+                            <option value="">Select</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Lot (PE)</label>
+                        <select id="numLotPE" onchange="updateCalculations()">
+                            <option value="">Select</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lot Size</label>
+                        <input type="number" id="lotSize" value="75">
+                    </div>
+                </div>
+
+                <div class="section-title">Summary</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Day's Gain/Loss Total (CE)</label>
+                        <input type="number" id="dayPnLTotalCE" placeholder="Total CE P&L" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Day's Gain/Loss Total (PE)</label>
+                        <input type="number" id="dayPnLTotalPE" placeholder="Total PE P&L" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Total without expenses</label>
+                        <input type="number" id="totalWithoutExpenses" placeholder="Gross total" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Expenses</label>
+                        <input type="number" id="expenses" placeholder="Brokerage, etc." step="0.01" oninput="updateCalculations()">
+                    </div>
+                    <div class="form-group">
+                        <label>Net Day's Gain/Loss</label>
+                        <input type="number" id="netDayPnL" placeholder="Net day P&L" step="0.01" readonly>
+                    </div>
+                </div>
+
+                <div class="section-title">Experience</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Experience</label>
+                        <input type="text" id="experience" placeholder="Notes / learning">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="addTrade()">Add Trade</button>
+                    <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    <button class="btn btn-secondary" onclick="showGoogleSheetsSetup()" style="margin-left: 12px;">⚙️ Google Sheets Setup</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="gsSetup" class="tab-content" style="display:none;">
+            <div class="form-section">
+                <h3>Google Sheets Integration</h3>
+                <p style="color: var(--color-text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    Trades auto-sync to Google Sheets when you add or delete them. Update URL if needed.
+                </p>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Google Apps Script URL (Web App)</label>
+                        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/...">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="connectGoogleSheets()">Update URL</button>
+                    <button class="btn btn-secondary" onclick="syncToGoogle()">Sync Now</button>
+                    <button class="btn btn-secondary" onclick="showGoogleSheetsSetup()" style="color: var(--color-error);">Close</button>
+                </div>
+                
+                <div id="gsStatus" style="margin-top: 20px; padding: 12px; background: var(--color-background); border-radius: 6px; display:none;">
+                    <p id="gsStatusText" style="margin: 0; font-size: 14px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="trades" class="tab-content">
+            <div id="tradesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let trades = [];
+        let googleScriptUrl = 'https://script.google.com/macros/s/AKfycbz83Y38qQhVSjAg7_Tm_mTzRGEuutPAxsGC2-PHXbkrWmXUmZ_P2UHSD_MOIEfXKn8vLw/exec';
+
+        function showGoogleSheetsSetup() {
+            const setupDiv = document.getElementById('gsSetup');
+            setupDiv.style.display = setupDiv.style.display === 'none' ? 'block' : 'none';
+            if (googleScriptUrl) {
+                document.getElementById('scriptUrl').value = googleScriptUrl;
+            }
+        }
+
+        function connectGoogleSheets() {
+            const scriptUrl = document.getElementById('scriptUrl').value.trim();
+            if (!scriptUrl) {
+                showGSStatus('Please enter a valid Google Apps Script URL', 'error');
+                return;
+            }
+            
+            googleScriptUrl = scriptUrl;
+            document.getElementById('scriptUrl').value = scriptUrl;
+            showGSStatus('✓ URL Updated! Trades will sync to Google Sheets.', 'success');
+            console.log('Connected to:', scriptUrl);
+        }
+
+        function syncToGoogle() {
+            if (!googleScriptUrl) {
+                showGSStatus('Not connected to Google Sheets. Set URL first.', 'error');
+                return;
+            }
+
+            const payload = {
+                action: 'saveTrades',
+                trades: trades
+            };
+
+            fetch(googleScriptUrl, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                mode: 'no-cors'
+            })
+            .then(() => {
+                showGSStatus(`✓ Synced ${trades.length} trades to Google Sheets`, 'success');
+                console.log('Sync completed:', trades.length, 'trades');
+            })
+            .catch(error => {
+                showGSStatus('Sync error: ' + error.message, 'error');
+                console.error('Sync error:', error);
+            });
+        }
+
+        function showGSStatus(message, type) {
+            const statusDiv = document.getElementById('gsStatus');
+            const statusText = document.getElementById('gsStatusText');
+            statusDiv.style.display = 'block';
+            statusText.textContent = message;
+            statusDiv.style.background = type === 'error' ? 'rgba(192, 21, 47, 0.1)' : 'rgba(33, 128, 141, 0.1)';
+            statusText.style.color = type === 'error' ? 'var(--color-error)' : 'var(--color-success)';
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tradeDate').value = today;
+        }
+
+        function calcHiPlus5() {
+            const hi = parseFloat(document.getElementById('niftyHi').value);
+            if (!isNaN(hi)) {
+                document.getElementById('niftyHiPlus5').value = (hi + 5).toFixed(2);
+            } else {
+                document.getElementById('niftyHiPlus5').value = '';
+            }
+        }
+
+        function calcLoMinus5() {
+            const lo = parseFloat(document.getElementById('niftyLo').value);
+            if (!isNaN(lo)) {
+                document.getElementById('niftyLoMinus5').value = (lo - 5).toFixed(2);
+            } else {
+                document.getElementById('niftyLoMinus5').value = '';
+            }
+        }
+
+        function roundToNearestHundred(num) {
+            return Math.round(num / 100) * 100;
+        }
+
+        function onTypeChange() {
+            const typeSelect = document.getElementById('typeSER');
+            const endExpNote = document.getElementById('endExpNote');
+            endExpNote.style.display = typeSelect.value === 'E' ? 'block' : 'none';
+        }
+
+        function onCrossLevelChange() {
+            const crossLevelSelect = document.getElementById('crossLevel');
+            const ceStrikeInput = document.getElementById('optionSelectCE');
+            const peStrikeInput = document.getElementById('optionSelectPE');
+            const hiPlus5 = parseFloat(document.getElementById('niftyHiPlus5').value);
+            const loMinus5 = parseFloat(document.getElementById('niftyLoMinus5').value);
+
+            const ceBuyLabel = document.getElementById('ceBuyLabel');
+            const ceSellLabel = document.getElementById('ceSellLabel');
+            const peBuyLabel = document.getElementById('peBuyLabel');
+            const peSellLabel = document.getElementById('peSellLabel');
+
+            if (crossLevelSelect.value === 'Hi' && !isNaN(loMinus5)) {
+                const roundedVal = roundToNearestHundred(loMinus5);
+                ceStrikeInput.value = roundedVal;
+                peStrikeInput.value = roundedVal;
+                ceStrikeInput.readOnly = true;
+                peStrikeInput.readOnly = true;
+                ceBuyLabel.style.display = 'inline-block';
+                ceSellLabel.style.display = 'none';
+                peBuyLabel.style.display = 'none';
+                peSellLabel.style.display = 'inline-block';
+            }
+            else if (crossLevelSelect.value === 'Lo' && !isNaN(hiPlus5)) {
+                const roundedVal = roundToNearestHundred(hiPlus5);
+                ceStrikeInput.value = roundedVal;
+                peStrikeInput.value = roundedVal;
+                ceStrikeInput.readOnly = true;
+                peStrikeInput.readOnly = true;
+                ceBuyLabel.style.display = 'none';
+                ceSellLabel.style.display = 'inline-block';
+                peBuyLabel.style.display = 'inline-block';
+                peSellLabel.style.display = 'none';
+            }
+            else {
+                ceStrikeInput.value = '';
+                peStrikeInput.value = '';
+                ceStrikeInput.readOnly = false;
+                peStrikeInput.readOnly = false;
+                ceBuyLabel.style.display = 'none';
+                ceSellLabel.style.display = 'none';
+                peBuyLabel.style.display = 'none';
+                peSellLabel.style.display = 'none';
+            }
+            updateCalculations();
+        }
+
+        function onCeAtChange() {
+            const ceAt = parseFloat(document.getElementById('ceAt').value);
+            const crossLevel = document.getElementById('crossLevel').value;
+
+            if (isNaN(ceAt)) {
+                document.getElementById('ceSL').value = '';
+                document.getElementById('ceTarget').value = '';
+                return;
+            }
+
+            if (crossLevel === 'Hi') {
+                document.getElementById('ceSL').value = (ceAt - 32).toFixed(2);
+                document.getElementById('ceTarget').value = (ceAt + 20).toFixed(2);
+            } else if (crossLevel === 'Lo') {
+                document.getElementById('ceSL').value = (ceAt + 32).toFixed(2);
+                document.getElementById('ceTarget').value = (ceAt - 20).toFixed(2);
+            }
+            updateCalculations();
+        }
+
+        function onPeAtChange() {
+            const peAt = parseFloat(document.getElementById('peAt').value);
+            const crossLevel = document.getElementById('crossLevel').value;
+
+            if (isNaN(peAt)) {
+                document.getElementById('peSL').value = '';
+                document.getElementById('peTarget').value = '';
+                return;
+            }
+
+            if (crossLevel === 'Hi') {
+                document.getElementById('peSL').value = (peAt + 32).toFixed(2);
+                document.getElementById('peTarget').value = (peAt - 20).toFixed(2);
+            } else if (crossLevel === 'Lo') {
+                document.getElementById('peSL').value = (peAt - 32).toFixed(2);
+                document.getElementById('peTarget').value = (peAt + 20).toFixed(2);
+            }
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            const crossLevel = document.getElementById('crossLevel').value;
+            const ceAt = parseFloat(document.getElementById('ceAt').value);
+            const ceExitLevel = parseFloat(document.getElementById('ceExitLevel').value);
+            const peAt = parseFloat(document.getElementById('peAt').value);
+            const peExitLevel = parseFloat(document.getElementById('peExitLevel').value);
+            const numLotCE = parseFloat(document.getElementById('numLotCE').value) || 0;
+            const numLotPE = parseFloat(document.getElementById('numLotPE').value) || 0;
+            const lotSize = parseFloat(document.getElementById('lotSize').value) || 75;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+
+            let dayPnLPerLotCE = 0;
+            let dayPnLPerLotPE = 0;
+
+            if (crossLevel === 'Hi') {
+                dayPnLPerLotCE = !isNaN(ceAt) && !isNaN(ceExitLevel) ? ceExitLevel - ceAt : 0;
+                dayPnLPerLotPE = !isNaN(peAt) && !isNaN(peExitLevel) ? peAt - peExitLevel : 0;
+            } else if (crossLevel === 'Lo') {
+                dayPnLPerLotCE = !isNaN(ceAt) && !isNaN(ceExitLevel) ? ceAt - ceExitLevel : 0;
+                dayPnLPerLotPE = !isNaN(peAt) && !isNaN(peExitLevel) ? peExitLevel - peAt : 0;
+            }
+
+            document.getElementById('dayPnLPerLotCE').value = dayPnLPerLotCE.toFixed(2);
+            document.getElementById('dayPnLPerLotPE').value = dayPnLPerLotPE.toFixed(2);
+
+            const dayPnLTotalCE = dayPnLPerLotCE * numLotCE * lotSize;
+            const dayPnLTotalPE = dayPnLPerLotPE * numLotPE * lotSize;
+            const totalWithoutExpenses = dayPnLTotalCE + dayPnLTotalPE;
+            const netDayPnL = totalWithoutExpenses - expenses;
+
+            document.getElementById('dayPnLTotalCE').value = dayPnLTotalCE.toFixed(2);
+            document.getElementById('dayPnLTotalPE').value = dayPnLTotalPE.toFixed(2);
+            document.getElementById('totalWithoutExpenses').value = totalWithoutExpenses.toFixed(2);
+            document.getElementById('netDayPnL').value = netDayPnL.toFixed(2);
+        }
+
+        function addTrade() {
+            const date = document.getElementById('tradeDate').value;
+            const ceAt = parseFloat(document.getElementById('ceAt').value);
+            const peAt = parseFloat(document.getElementById('peAt').value);
+            const ceExitLevel = parseFloat(document.getElementById('ceExitLevel').value);
+            const peExitLevel = parseFloat(document.getElementById('peExitLevel').value);
+            const numLotCE = parseFloat(document.getElementById('numLotCE').value);
+            const numLotPE = parseFloat(document.getElementById('numLotPE').value);
+
+            const trade = {
+                id: Date.now(),
+                date: date,
+                typeSER: document.getElementById('typeSER').value,
+                niftyHi: parseFloat(document.getElementById('niftyHi').value) || 0,
+                niftyHiPlus5: parseFloat(document.getElementById('niftyHiPlus5').value) || 0,
+                niftyLo: parseFloat(document.getElementById('niftyLo').value) || 0,
+                niftyLoMinus5: parseFloat(document.getElementById('niftyLoMinus5').value) || 0,
+                crossTime: document.getElementById('crossTime').value,
+                crossLevel: document.getElementById('crossLevel').value,
+                optionSelectCE: parseFloat(document.getElementById('optionSelectCE').value) || 0,
+                ceAt: ceAt,
+                optionSelectPE: parseFloat(document.getElementById('optionSelectPE').value) || 0,
+                peAt: peAt,
+                ceSL: parseFloat(document.getElementById('ceSL').value) || 0,
+                ceTarget: parseFloat(document.getElementById('ceTarget').value) || 0,
+                peSL: parseFloat(document.getElementById('peSL').value) || 0,
+                peTarget: parseFloat(document.getElementById('peTarget').value) || 0,
+                ceExitTime: document.getElementById('ceExitTime').value,
+                ceExitLevel: ceExitLevel,
+                peExitTime: document.getElementById('peExitTime').value,
+                peExitLevel: peExitLevel,
+                dayPnLPerLotCE: parseFloat(document.getElementById('dayPnLPerLotCE').value) || 0,
+                dayPnLPerLotPE: parseFloat(document.getElementById('dayPnLPerLotPE').value) || 0,
+                numLotCE: numLotCE,
+                numLotPE: numLotPE,
+                lotSize: parseFloat(document.getElementById('lotSize').value) || 75,
+                dayPnLTotalCE: parseFloat(document.getElementById('dayPnLTotalCE').value) || 0,
+                dayPnLTotalPE: parseFloat(document.getElementById('dayPnLTotalPE').value) || 0,
+                expenses: parseFloat(document.getElementById('expenses').value) || 0,
+                netDayPnL: parseFloat(document.getElementById('netDayPnL').value) || 0,
+                totalWithoutExpenses: parseFloat(document.getElementById('totalWithoutExpenses').value) || 0,
+                experience: document.getElementById('experience').value
+            };
+
+            trades.push(trade);
+            syncToGoogle();
+            clearForm();
+            updateUI();
+            switchTab(null, 'trades');
+        }
+
+        function deleteTrade(id) {
+            const index = trades.findIndex(t => t.id === id);
+            if (index > -1) {
+                trades.splice(index, 1);
+                syncToGoogle();
+                updateUI();
+            }
+        }
+
+        function clearForm() {
+            setDefaultDate();
+            document.querySelectorAll('#add-trade input[type=number], #add-trade input[type=text], #add-trade input[type=time]').forEach(i => i.value = '');
+            document.querySelectorAll('#add-trade select').forEach(s => s.value = '');
+            document.getElementById('typeSER').value = 'S';
+            document.getElementById('lotSize').value = 75;
+            document.getElementById('endExpNote').style.display = 'none';
+            const ceBuyLabel = document.getElementById('ceBuyLabel');
+            const ceSellLabel = document.getElementById('ceSellLabel');
+            const peBuyLabel = document.getElementById('peBuyLabel');
+            const peSellLabel = document.getElementById('peSellLabel');
+            ceBuyLabel.style.display = 'none';
+            ceSellLabel.style.display = 'none';
+            peBuyLabel.style.display = 'none';
+            peSellLabel.style.display = 'none';
+        }
+
+        function calculateSimplePnL(trade) {
+            return trade.netDayPnL || trade.netDay || trade.dayPnLTotal || 0;
+        }
+
+        function updateUI() {
+            const totalPnL = trades.reduce((sum, t) => sum + calculateSimplePnL(t), 0);
+            const gainTrades = trades.filter(t => calculateSimplePnL(t) > 0).length;
+            const lossTrades = trades.filter(t => calculateSimplePnL(t) < 0).length;
+            const winRate = trades.length > 0 ? ((gainTrades / trades.length) * 100).toFixed(1) : 0;
+            const avgTrade = trades.length > 0 ? (totalPnL / trades.length).toFixed(2) : 0;
+
+            document.getElementById('totalTrades').textContent = trades.length;
+            document.getElementById('gainDays').textContent = gainTrades;
+            document.getElementById('lossDays').textContent = lossTrades;
+            document.getElementById('totalPnL').textContent = `₹${totalPnL.toFixed(2)}`;
+            document.getElementById('pnlStatus').textContent = totalPnL >= 0 ? '✓ Positive' : '✗ Negative';
+            document.getElementById('pnlStatus').className = 'subvalue ' + (totalPnL >= 0 ? 'status-positive' : 'status-negative');
+            document.getElementById('winRate').textContent = winRate + '%';
+            document.getElementById('avgTrade').textContent = `₹${avgTrade}`;
+
+            const callBuys = trades.filter(t => (t.ceAt || 0) !== 0);
+            const putBuys = trades.filter(t => (t.peAt || 0) !== 0);
+            const callSells = trades.filter(t => (t.ceAt || 0) !== 0);
+            const putSells = trades.filter(t => (t.peAt || 0) !== 0);
+
+            document.getElementById('callBuys').textContent = callBuys.length;
+            document.getElementById('callBuysGain').textContent = callBuys.filter(t => (t.dayPnLPerLotCE || 0) > 0).length;
+            document.getElementById('callBuysLoss').textContent = callBuys.filter(t => (t.dayPnLPerLotCE || 0) < 0).length;
+
+            document.getElementById('putBuys').textContent = putBuys.length;
+            document.getElementById('putBuysGain').textContent = putBuys.filter(t => (t.dayPnLPerLotPE || 0) > 0).length;
+            document.getElementById('putBuysLoss').textContent = putBuys.filter(t => (t.dayPnLPerLotPE || 0) < 0).length;
+
+            document.getElementById('callSells').textContent = callSells.length;
+            document.getElementById('callSellsGain').textContent = callSells.filter(t => (t.dayPnLPerLotCE || 0) > 0).length;
+            document.getElementById('callSellsLoss').textContent = callSells.filter(t => (t.dayPnLPerLotCE || 0) < 0).length;
+
+            document.getElementById('putSells').textContent = putSells.length;
+            document.getElementById('putSellsGain').textContent = putSells.filter(t => (t.dayPnLPerLotPE || 0) > 0).length;
+            document.getElementById('putSellsLoss').textContent = putSells.filter(t => (t.dayPnLPerLotPE || 0) < 0).length;
+
+            renderTrades();
+        }
+
+       function renderTrades() {
+            const container = document.getElementById('tradesContainer');
+
+            if (trades.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No trades recorded yet. Add your first trade!</p></div>';
+                return;
+            }
+
+            let html = '<table class="trades-table"><thead><tr><th>Date</th><th>Type</th><th>Nifty Hi/Lo</th><th>CE @</th><th>PE @</th><th>Net Day</th><th>Action</th></tr></thead><tbody>';
+
+            trades.forEach(trade => {
+                const pnl = calculateSimplePnL(trade);
+                const pnlClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
+                
+                // Convert to numbers in case they came from Google Sheets as strings
+                const ceAt = parseFloat(trade.ceAt) || 0;
+                const peAt = parseFloat(trade.peAt) || 0;
+                
+                html += `<tr>
+                    <td>${trade.date}</td>
+                    <td>${trade.typeSER}</td>
+                    <td>${trade.niftyHi} / ${trade.niftyLo}</td>
+                    <td>₹${ceAt.toFixed(2)}</td>
+                    <td>₹${peAt.toFixed(2)}</td>
+                    <td class="${pnlClass}">₹${pnl.toFixed(2)}</td>
+                    <td><button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="deleteTrade(${trade.id})">Delete</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function switchTab(evt, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
+        }
+
+  function autoLoadOnInit() {
+    if (!googleScriptUrl) {
+        console.log('No Google Sheets URL set');
+        updateUI();
+        return;
+    }
+
+    console.log('Starting auto-load from:', googleScriptUrl);
+
+    // Use simple GET request - no CORS issues
+    fetch(googleScriptUrl)
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data parsed:', data);
+        
+        if (data && data.status === 'success' && data.trades && Array.isArray(data.trades)) {
+            trades = data.trades;
+            console.log('✓ Auto-loaded', trades.length, 'trades from Google Sheets');
+            showGSStatus(`✓ Auto-loaded ${trades.length} trades from Google Sheets`, 'success');
+        } else {
+            console.log('No trades in response');
+        }
+        updateUI();
+    })
+    .catch(error => {
+        console.log('Auto-load error:', error.message);
+        updateUI();
+    });
+}
+
+
+
+
+        setDefaultDate();
+        setTimeout(() => autoLoadOnInit(), 1000);
+        updateUI();
+    </script>
+</body>
+</html>
